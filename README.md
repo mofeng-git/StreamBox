@@ -14,7 +14,7 @@ StreamBox 是一款面向 USB 摄像头和 USB HDMI 采集卡的视频采集与�
       <img src="https://github.com/user-attachments/assets/92da5608-2adb-4689-8b51-6abe49a8d71a" width="100%" />
     </td>
     <td width="50%" align="center">
-      <img src="https://github.com/user-attachments/assets/c86d0353-9ecd-45f7-a864-72669be1cf39" width="100%" />
+      <img src="https://github.com/user-attachments/assets/7a1de66d-0f49-4390-9854-08d0c8a049a1" width="100%" />
     </td>
   </tr>
   <tr>
