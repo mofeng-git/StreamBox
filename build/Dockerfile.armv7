@@ -1,0 +1,72 @@
+# StreamBox ARMv7 builder. The base image supplies the One-KVM cross toolchain
+# and the libyuv/x264/x265/Rockchip development libraries.
+ARG BASE_IMAGE=localhost/cross-rs/cross-custom-one-kvm:armv7-unknown-linux-gnueabihf-0affd
+FROM ${BASE_IMAGE}
+
+ARG FFMPEG_ROCKCHIP_REV=40c412daccf08164493da0de990eb99a8948116b
+ARG FFMPEG_ROCKCHIP_REPO=https://github.com/nyanmisaka/ffmpeg-rockchip.git
+
+USER root
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates curl git make pkg-config nasm yasm \
+    libasound2-dev:armhf libdrm-dev:armhf \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN set -eux; \
+    mkdir -p /tmp/ffmpeg && \
+    cd /tmp/ffmpeg && \
+    git init && git remote add origin "${FFMPEG_ROCKCHIP_REPO}" && \
+    git -c http.version=HTTP/1.1 fetch --depth 1 origin "${FFMPEG_ROCKCHIP_REV}" && git checkout --detach FETCH_HEAD && \
+    cd /tmp/ffmpeg && \
+    export PKG_CONFIG_LIBDIR=/usr/arm-linux-gnueabihf/lib/pkgconfig:/usr/lib/arm-linux-gnueabihf/pkgconfig && \
+    export PKG_CONFIG_PATH= && \
+    ./configure \
+      --prefix=/usr/arm-linux-gnueabihf \
+      --cross-prefix=arm-linux-gnueabihf- \
+      --cc=arm-linux-gnueabihf-gcc \
+      --cxx=arm-linux-gnueabihf-g++ \
+      --ld=arm-linux-gnueabihf-gcc \
+      --ar=arm-linux-gnueabihf-ar \
+      --nm=arm-linux-gnueabihf-nm \
+      --ranlib=arm-linux-gnueabihf-ranlib \
+      --pkg-config=pkg-config \
+      --arch=arm --cpu=cortex-a5 --target-os=linux --enable-cross-compile \
+      --extra-cflags=-mfpu=vfpv3-d16 --extra-ldflags=-mfpu=vfpv3-d16 \
+      --enable-gpl --enable-version3 --enable-pic \
+      --disable-shared --enable-static \
+      --disable-programs --disable-doc --disable-debug \
+      --disable-avdevice --disable-avfilter --disable-postproc \
+      --enable-libdrm --enable-rkmpp --enable-rkrga --disable-vaapi \
+      --enable-avcodec --enable-avformat --enable-avutil --enable-swresample \
+      --enable-network \
+      --enable-protocol=file,pipe,tcp,udp,rtp,rtmp \
+      --enable-muxer=mpegts,mp4,flv,mpeg,rtp \
+      --enable-demuxer=matroska,mpegts,mov,flv \
+      --enable-parser=h264,hevc,mjpeg,aac \
+      --enable-bsf=h264_mp4toannexb,hevc_mp4toannexb,aac_adtstoasc \
+      --enable-decoder=mjpeg,h264,hevc,aac \
+      --enable-encoder=aac,pcm_alaw,pcm_mulaw,h264_rkmpp,hevc_rkmpp,h264_v4l2m2m,hevc_v4l2m2m,libx264,libx265 \
+      --enable-indev=v4l2,alsa \
+      --enable-outdev=null \
+      --enable-v4l2-m2m \
+      --enable-libx264 --enable-libx265 \
+    && make -j"$(nproc)" \
+    && make install \
+    && rm -rf /tmp/ffmpeg
+
+ENV PATH="/root/.cargo/bin:${PATH}" \
+    ONE_KVM_LIBS_PATH=/usr/arm-linux-gnueabihf \
+    STREAMBOX_FFMPEG_LIB_DIR=/usr/arm-linux-gnueabihf/lib \
+    STREAMBOX_STATIC_FFMPEG=1 \
+    FFMPEG_STATIC=1 \
+    LIBYUV_STATIC=1 \
+    PKG_CONFIG_LIBDIR=/usr/arm-linux-gnueabihf/lib/pkgconfig:/usr/lib/arm-linux-gnueabihf/pkgconfig \
+    PKG_CONFIG_PATH= \
+    PKG_CONFIG_ALLOW_CROSS=1 \
+    PKG_CONFIG_ALL_STATIC=1 \
+    CFLAGS="-DAV_PROFILE_H264_CONSTRAINED_BASELINE=FF_PROFILE_H264_CONSTRAINED_BASELINE -DAV_PROFILE_HEVC_MAIN=FF_PROFILE_HEVC_MAIN" \
+    CXXFLAGS="-DAV_PROFILE_H264_CONSTRAINED_BASELINE=FF_PROFILE_H264_CONSTRAINED_BASELINE -DAV_PROFILE_HEVC_MAIN=FF_PROFILE_HEVC_MAIN" \
+    RUSTFLAGS="-C linker=arm-linux-gnueabihf-gcc -C link-arg=-Wl,--allow-multiple-definition"
+
+WORKDIR /workspace/StreamBox
+CMD ["bash"]

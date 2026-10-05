@@ -1,0 +1,1 @@
+{"name":"streambox-web","private":true,"version":"0.1.0","type":"module","scripts":{"build":"tailwindcss -i ./src/style.css -o ./dist/assets/app.css --minify && cp ./index.html ./dist/index.html && cp ./src/main.js ./dist/assets/app.js","dev":"tailwindcss -i ./src/style.css -o ./dist/assets/app.css --watch"},"devDependencies":{"tailwindcss":"^3.4.17"}}

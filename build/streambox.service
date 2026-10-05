@@ -1,0 +1,17 @@
+[Unit]
+Description=StreamBox USB capture and recording service
+After=network-online.target sound.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/var/lib/streambox
+ExecStart=/usr/bin/streambox --data-dir /var/lib/streambox --bind 0.0.0.0 --port 8090
+Restart=on-failure
+RestartSec=3
+Environment=RUST_LOG=info
+Environment=ONE_KVM_V4L2M2M_ALLOW=1
+
+[Install]
+WantedBy=multi-user.target

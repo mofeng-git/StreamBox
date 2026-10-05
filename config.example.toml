@@ -1,0 +1,70 @@
+[video]
+device = "/dev/video1"
+width = 1920
+height = 1080
+fps = 30
+input_format = "mjpeg"
+codec = "h264"
+encoder = "auto"
+bitrate_kbps = 4000
+profile = "high"
+level = "4.1"
+
+[audio]
+enabled = true
+device = "hw:0,0"
+codec = "aac"
+sample_rate = 48000
+channels = 2
+
+[recording]
+directory = "/var/lib/streambox/recordings"
+container = "mpegts"
+auto_start = false
+segment_seconds = 600
+loop_recording = true
+min_free_bytes = 268435456
+schedule_enabled = false
+schedule_start = "08:00"
+schedule_stop = "18:00"
+
+[streaming.rtsp]
+enabled = false
+bind = "0.0.0.0"
+port = 8554
+path = "/camera/main"
+username = "admin"
+password = "change-me"
+
+[streaming.rtmp]
+enabled = false
+url = "rtmp://127.0.0.1/live/stream"
+reconnect_seconds = 5
+
+[streaming.onvif]
+enabled = false
+bind = "0.0.0.0"
+port = 8000
+name = "StreamBox"
+username = "admin"
+password = "change-me"
+
+[security]
+enabled = true
+username = "admin"
+password = "admin"
+
+# Add one block per independent input pipeline.
+# [[channels]]
+# id = "hdmi-1"
+# name = "HDMI 输入 1"
+# enabled = true
+# [channels.video]
+# device = "/dev/video1"
+# input_format = "mjpeg"
+# width = 1920
+# height = 1080
+# fps = 30
+# codec = "h264"
+# encoder = "auto"
+# bitrate_kbps = 4000
